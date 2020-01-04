@@ -7,9 +7,10 @@ import httpx
 
 app = Quart(__name__, static_folder="build/static", template_folder="build")
 
-@app.route("/")
-async def serve():
-    return await render_template("index.html")
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+async def index(path):
+    return await render_template('index.html')
 
 @app.route("/hello")
 async def hello():
@@ -35,14 +36,12 @@ async def random_anime():
         }
         '''
 
-        # Define our query variables and values that will be used in the query request
         variables = {
             'id': random_id
         }
 
         url = 'https://graphql.anilist.co'
 
-        # Make the HTTP Api request
         response = await httpx.post(url, json={'query': query, 'variables': variables})
         result = json.loads(response.text)
         if result["data"]["Media"] != None:
