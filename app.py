@@ -24,7 +24,7 @@ async def random_anime():
         # print(random_id)
         query = '''
         query ($id: Int) { # Define which variables will be used in the query (id)
-        Media (id: $id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+        Media (id: $id, type: ANIME, isAdult: false) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
             id
             title {
                 romaji
