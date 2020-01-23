@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-from quart import Quart, render_template, send_from_directory, jsonify
+from quart import Quart, render_template, send_from_directory, jsonify, request
 import httpx
 
 app = Quart(__name__, static_folder="ranime-client/build/static", template_folder="ranime-client/build")
@@ -16,38 +16,57 @@ async def index(path):
 async def hello():
     return "hello"
 
-@app.route("/data/anime")
+@app.route("/data/anime", methods=["GET", "POST"])
 async def random_anime():
+    if request.method == "GET":
+        nsfw_url_arg = 0
+    else:
+        nsfw_url_arg = await request.get_json()
+        nsfw_url_arg =int(nsfw_url_arg["nsfw"])
+        print(nsfw_url_arg)
+
+    if nsfw_url_arg == 0:
+        isAdult = " isAdult: false"
+    elif nsfw_url_arg == 1:
+        isAdult = " isAdult: true"
+    else:
+        isAdult = ""
+
     got_result = False
+
     while not got_result:
         random_id: int = random.randint(1, 10000)
         # print(random_id)
         query = '''
-        query ($id: Int) { # Define which variables will be used in the query (id)
-        Media (id: $id, type: ANIME, isAdult: false) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
-            id
-            title {
-                romaji
-                english
-                native
+        query ($id: Int) {
+            Media (id: $id, type: ANIME''' + isAdult + ''') { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+                id
+                title {
+                    romaji
+                    english
+                    native
+                }
+                genres
+                description
+                coverImage {
+                    extraLarge
+                }
+                season
+                seasonYear
             }
-            genres
-            description
-            coverImage {
-                extraLarge
-            }
-            season
-            seasonYear
-        }
         }
         '''
+
+        # print(query)
 
         variables = {
             'id': random_id
         }
 
         url = 'https://graphql.anilist.co'
-        response = await httpx.post(url, json={'query': query, 'variables': variables})
+        client = httpx.AsyncClient()
+        response = await client.post(url, json={'query': query, 'variables': variables})
+        await client.aclose()
         result = json.loads(response.text)
         ret_dict = {}
         if result["data"]["Media"] != None:
