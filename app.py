@@ -14,8 +14,8 @@ def clean_html(text):
 
     for e in soup.findAll('br'):
         e.extract()
-    
-    return soup.prettify()
+    # print(soup.text)
+    return soup.text
 
 
 @app.route('/', defaults={'path': ''})
@@ -89,7 +89,10 @@ async def random_anime():
             ret_dict["genres"] = result["data"]["Media"]["genres"]
             ret_dict["image"] = result["data"]["Media"]["coverImage"]["extraLarge"]
             ret_dict["description"] = clean_html(result["data"]["Media"]["description"])
-            clean_html(ret_dict["description"])
+            try:
+                clean_html(ret_dict["description"])
+            except:
+                pass
             try:
                 ret_dict["aired"] = f"Aired {result['data']['Media']['season'].lower().capitalize()} {result['data']['Media']['seasonYear']}"
             except:
