@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { Card, Image, Container, Header, Grid, Button, Dropdown, Divider, Segment } from 'semantic-ui-react'
+import { Card, Image, Container, Header, Grid, Button, Dropdown, Divider, Segment, GridColumn } from 'semantic-ui-react'
 import {
   BrowserRouter as Router,
   Route,
@@ -81,23 +81,34 @@ x
       <div class="App-card">
         <Container text>
           <Grid stackable columns={2}>
-              <Grid.Column>
-                <Segment>
-                    <Image fluid src={this.state.image} />
-                </Segment>
-              </Grid.Column>
-              <Grid.Column>
-                <Segment>
-                  <h1>{this.state.title}</h1>
-                  <Card.Meta>
-                    <span className='date'>{this.state.aired}</span>
-                  </Card.Meta>
-                  <Card.Description>
-                    {this.state.description}
-                  </Card.Description>
-                </Segment>
-              </Grid.Column>
+            <Grid.Row>
+                <Grid.Column>
+                  <Segment>
+                      <Image fluid src={this.state.image} onClick={()=>{window.location.reload()}} />
+                  </Segment>
+                </Grid.Column>
+                <Grid.Column>
+                  <Segment>
+                    <h1>{this.state.title}</h1>
+                    <Card.Meta>
+                      <span className='date'>{this.state.aired}</span>
+                    </Card.Meta>
+                    <Card.Description>
+                      {this.state.description}
+                    </Card.Description>
+                  </Segment>
+                </Grid.Column>
+              </Grid.Row>
           </Grid>
+          
+          <Grid stackable columns={1}>
+            <GridColumn>
+              <div class="refresh-button">
+                <Button onClick={()=>{window.location.reload()}}>gimme a new one</Button>
+                </div>
+            </GridColumn>
+          </Grid>
+          
           </Container>
         </div>
       );
