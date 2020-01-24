@@ -90,6 +90,7 @@ async def random_anime():
             ret_dict["image"] = result["data"]["Media"]["coverImage"]["extraLarge"]
             ret_dict["description"] = clean_html(result["data"]["Media"]["description"])
             try:
+                # print(ret_dict["description"])
                 clean_html(ret_dict["description"])
             except:
                 pass
