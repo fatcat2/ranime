@@ -2,10 +2,21 @@ import json
 import os
 import random
 
+from bs4 import BeautifulSoup
 from quart import Quart, render_template, send_from_directory, jsonify, request
 import httpx
 
+
 app = Quart(__name__, static_folder="ranime-client/build/static", template_folder="ranime-client/build")
+
+def clean_html(text):
+    soup = BeautifulSoup(text, 'html.parser')
+
+    for e in soup.findAll('br'):
+        e.extract()
+    
+    return soup.prettify()
+
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -77,7 +88,8 @@ async def random_anime():
                 ret_dict["title"] = result["data"]["Media"]["title"]["romaji"]
             ret_dict["genres"] = result["data"]["Media"]["genres"]
             ret_dict["image"] = result["data"]["Media"]["coverImage"]["extraLarge"]
-            ret_dict["description"] = result["data"]["Media"]["description"]
+            ret_dict["description"] = clean_html(result["data"]["Media"]["description"])
+            clean_html(ret_dict["description"])
             try:
                 ret_dict["aired"] = f"Aired {result['data']['Media']['season'].lower().capitalize()} {result['data']['Media']['seasonYear']}"
             except:
