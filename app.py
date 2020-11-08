@@ -16,7 +16,6 @@ def clean_html(text):
 
     for e in soup.findAll('br'):
         e.extract()
-    # print(soup.text)
     return soup.text
 
 
