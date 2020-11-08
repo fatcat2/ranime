@@ -41,6 +41,7 @@ class AdvancedSearch extends React.Component {
     super();
     this.state = {
       nsfw: 0,
+      year: 1950,
       link: "/anime",
     };
     this.onChange = this.onChange.bind(this);
@@ -51,9 +52,13 @@ class AdvancedSearch extends React.Component {
 
     if (d.name === "nsfw") {
       this.setState({ nsfw: d.value });
-      let link = `/anime?nsfw=${d.value}`;
+      let link = `/anime?nsfw=${d.value}&seasonYear=${this.state.year}`;
       this.setState({ link: link });
-    }
+    }else if (d.name === "seasonYear") {
+        this.setState({ year: d.value });
+        let link = `/anime?nsfw=${this.state.nsfw}&seasonYear=${d.value}`;
+        this.setState({ link: link });
+      }
   }
 
   
@@ -61,16 +66,19 @@ class AdvancedSearch extends React.Component {
   render() {
     var year;
     var yearOptions = []
-
-    for(year in rangeInclusive(1950, 2021)){
+    var years = rangeInclusive(1950, 2020)
+    years.reverse()
+    for(year in years){
         yearOptions.push(
             {
-                key: year,
-                text: year,
-                value: year,
+                key: parseInt(years[year]),
+                text: parseInt(years[year]),
+                value: parseInt(years[year]),
             }
         )
     }
+
+    console.log(yearOptions)
     return (
       <Grid centered columns={1}>
         <Grid.Column>
@@ -93,7 +101,6 @@ class AdvancedSearch extends React.Component {
                   inline
                   options={nsfwOptions}
                   defaultValue={nsfwOptions[0].value}
-                  text={nsfwOptions[0].text}
                   onChange={this.onChange}
                 />
                 shows.
@@ -102,17 +109,14 @@ class AdvancedSearch extends React.Component {
             <Divider />
             <Container text>
               <p>
-                Show me{" "}
+                Show me shows from year {" "}
                 <Dropdown
                   name="seasonYear"
-                  inline
                   search
                   options={yearOptions}
-                  defaultValue={yearOptions[0]}
-                  text={yearOptions[0]}
+                  defaultValue={yearOptions[0].value}
                   onChange={this.onChange}
-                />
-                shows.
+                />.
               </p>
             </Container>
           </div>

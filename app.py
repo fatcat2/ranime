@@ -1,4 +1,6 @@
 import json
+from typing import List
+from models.show import Show
 import os
 import random
 
@@ -6,18 +8,10 @@ from bs4 import BeautifulSoup
 from quart import Quart, render_template, send_from_directory, jsonify, request
 import httpx
 
+from utils import retrieve_show, retrieve_id_list
 
 app = Quart(__name__, static_folder="ranime-client/build/static",
             template_folder="ranime-client/build")
-
-
-def clean_html(text):
-    soup = BeautifulSoup(text, 'html.parser')
-
-    for e in soup.findAll('br'):
-        e.extract()
-    return soup.text
-
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -32,71 +26,19 @@ async def hello():
 
 @app.route("/data/anime", methods=["GET", "POST"])
 async def random_anime():
-    if request.method == "GET":
-        nsfw_url_arg = 0
-    else:
-        nsfw_url_arg = await request.get_json()
-        nsfw_url_arg = int(nsfw_url_arg["nsfw"])
+    nsfw_url_arg = 0
 
-    if nsfw_url_arg == 0:
-        isAdult = " isAdult: false"
-    elif nsfw_url_arg == 1:
-        isAdult = " isAdult: true"
-    else:
-        isAdult = ""
+    if request.method == "POST":
+        body = await request.get_json()
+        nsfw_url_arg = int(body["nsfw"])
+    
+    id_list: List[int] = await retrieve_id_list(nsfw_url_arg, 5)
 
-    got_result = False
+    chosen_show: Show = await retrieve_show(random.choice(id_list))
 
-    while not got_result:
-        random_id: int = random.randint(1, 10000)
-        query = '''
-        query ($id: Int) {
-            Media (id: $id, type: ANIME''' + isAdult + ''') {
-                id
-                title {
-                    romaji
-                    english
-                    native
-                }
-                genres
-                description
-                coverImage {
-                    extraLarge
-                }
-                season
-                seasonYear
-            }
-        }
-        '''
+    print(chosen_show.to_dict())
 
-        variables = {
-            'id': random_id
-        }
-
-        url = 'https://graphql.anilist.co'
-        client = httpx.AsyncClient()
-        response = await client.post(url, json={'query': query, 'variables': variables})
-        await client.aclose()
-        result = json.loads(response.text)
-        ret_dict = {}
-        if result["data"]["Media"] != None:
-            got_result == True
-            ret_dict["title"] = result["data"]["Media"]["title"]["english"]
-            if ret_dict["title"] == None:
-                ret_dict["title"] = result["data"]["Media"]["title"]["romaji"]
-            ret_dict["genres"] = result["data"]["Media"]["genres"]
-            ret_dict["image"] = result["data"]["Media"]["coverImage"]["extraLarge"]
-            ret_dict["description"] = clean_html(
-                result["data"]["Media"]["description"])
-            try:
-                clean_html(ret_dict["description"])
-            except:
-                pass
-            try:
-                ret_dict["aired"] = f"Aired {result['data']['Media']['season'].lower().capitalize()} {result['data']['Media']['seasonYear']}"
-            except:
-                ret_dict["aired"] = ""
-            return jsonify(ret_dict)
+    return jsonify(chosen_show.to_dict())
 
 
 @app.route("/data/advanced", methods=["GET", "POST"])
@@ -108,9 +50,9 @@ async def random_test():
 
     if request.method == "POST":
         body = await request.get_json()
-        nsfw_url_arg = int(body["nsfw"])
-        season = body["season"]
-        seasonYear = int(body["seasonYear"])
+        nsfw_url_arg = int(body.get("nsfw", 0))
+        season = body.get("season", season)
+        seasonYear = int(body.get("seasonYear", seasonYear))
 
     if nsfw_url_arg == 0:
         isAdult = " isAdult: false"
@@ -162,69 +104,9 @@ async def random_test():
 
         page_counter += 1
 
-    the_chosen_one = random.choice(id_list)
+    chosen_show: Show = await retrieve_show(random.choice(id_list))
 
-    query = '''
-    query ($id: Int) {
-        Media (id: $id, type: ANIME''' + isAdult + ''') {
-            id
-            title {
-                romaji
-                english
-                native
-            }
-            genres
-            description
-            coverImage {
-                extraLarge
-            }
-            season
-            seasonYear
-            streamingEpisodes {
-                url
-                site
-            }
-        }
-    }
-    '''
-
-    single_episode_vars = {
-        "id": the_chosen_one
-    }
-
-    url = "https://graphql.anilist.co:"
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, json={'query': query, 'variables': single_episode_vars})
-        result = json.loads(response.text)
-
-    ret_dict = {}
-
-    ret_dict["title"] = result["data"]["Media"]["title"]["english"]
-
-    if ret_dict["title"] == None:
-        ret_dict["title"] = result["data"]["Media"]["title"]["romaji"]
-    ret_dict["genres"] = result["data"]["Media"]["genres"]
-    ret_dict["image"] = result["data"]["Media"]["coverImage"]["extraLarge"]
-    ret_dict["description"] = clean_html(
-        result["data"]["Media"]["description"])
-
-    if len(result["data"]["Media"]["streamingEpisodes"]) > 0:
-        ret_dict["watch_link"] = result["data"]["Media"]["streamingEpisodes"][0]["url"]
-        ret_dict["watch_site"] = result["data"]["Media"]["streamingEpisodes"][0]["site"]
-    else:
-        ret_dict["watch_link"] = ""
-        ret_dict["watch_site"] = ""
-
-    try:
-        clean_html(ret_dict["description"])
-    except:
-        pass
-    try:
-        ret_dict["aired"] = f"Aired {result['data']['Media']['season'].lower().capitalize()} {result['data']['Media']['seasonYear']}"
-    except:
-        ret_dict["aired"] = ""
-
-    return jsonify(ret_dict)
+    return jsonify(chosen_show.to_dict())
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
