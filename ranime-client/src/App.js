@@ -14,7 +14,7 @@ class Main extends React.Component {
     return (
       <Router>
         <Route path="/" exact component={Home} />
-        {/* <Route path="/advanced" exact component={AdvancedSearch} /> */}
+        <Route path="/advanced" exact component={AdvancedSearch} />
         <Route path="/anime" exact component={RandomAnime} />
       </Router>
     )
