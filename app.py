@@ -51,7 +51,7 @@ async def random_anime():
         random_id: int = random.randint(1, 10000)
         query = '''
         query ($id: Int) {
-            Media (id: $id, type: ANIME''' + isAdult + ''') { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+            Media (id: $id, type: ANIME''' + isAdult + ''') {
                 id
                 title {
                     romaji
