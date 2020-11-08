@@ -99,13 +99,14 @@ async def random_anime():
             return jsonify(ret_dict)
 
 
-@app.route("/data/test", methods=["GET", "POST"])
+@app.route("/data/advanced", methods=["GET", "POST"])
 async def random_test():
-    if request.method == "GET":
-        nsfw_url_arg = 0
-        season = "FALL"
-        seasonYear = 2020
-    else:
+    nsfw_url_arg = 0
+    season = "FALL"
+    seasonYear = 2020
+    isAdult = ""
+
+    if request.method == "POST":
         body = await request.get_json()
         nsfw_url_arg = int(body["nsfw"])
         season = body["season"]
@@ -115,8 +116,6 @@ async def random_test():
         isAdult = " isAdult: false"
     elif nsfw_url_arg == 1:
         isAdult = " isAdult: true"
-    else:
-        isAdult = ""
 
     season_query = '''
     query ($page: Int, $perPage: Int, $season: MediaSeason, $seasonYear: Int) {
