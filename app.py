@@ -7,7 +7,9 @@ from quart import Quart, render_template, send_from_directory, jsonify, request
 import httpx
 
 
-app = Quart(__name__, static_folder="ranime-client/build/static", template_folder="ranime-client/build")
+app = Quart(__name__, static_folder="ranime-client/build/static",
+            template_folder="ranime-client/build")
+
 
 def clean_html(text):
     soup = BeautifulSoup(text, 'html.parser')
@@ -23,9 +25,11 @@ def clean_html(text):
 async def index(path):
     return await render_template('index.html')
 
+
 @app.route("/hello")
 async def hello():
     return "hello"
+
 
 @app.route("/data/anime", methods=["GET", "POST"])
 async def random_anime():
@@ -33,7 +37,7 @@ async def random_anime():
         nsfw_url_arg = 0
     else:
         nsfw_url_arg = await request.get_json()
-        nsfw_url_arg =int(nsfw_url_arg["nsfw"])
+        nsfw_url_arg = int(nsfw_url_arg["nsfw"])
 
     if nsfw_url_arg == 0:
         isAdult = " isAdult: false"
@@ -83,7 +87,8 @@ async def random_anime():
                 ret_dict["title"] = result["data"]["Media"]["title"]["romaji"]
             ret_dict["genres"] = result["data"]["Media"]["genres"]
             ret_dict["image"] = result["data"]["Media"]["coverImage"]["extraLarge"]
-            ret_dict["description"] = clean_html(result["data"]["Media"]["description"])
+            ret_dict["description"] = clean_html(
+                result["data"]["Media"]["description"])
             try:
                 clean_html(ret_dict["description"])
             except:
@@ -103,7 +108,7 @@ async def random_test():
         seasonYear = 2020
     else:
         body = await request.get_json()
-        nsfw_url_arg =int(body["nsfw"])
+        nsfw_url_arg = int(body["nsfw"])
         season = body["season"]
         seasonYear = int(body["seasonYear"])
 
@@ -156,11 +161,11 @@ async def random_test():
 
         if result["data"]["Page"]["pageInfo"]["hasNextPage"] == False:
             break
-        
+
         page_counter += 1
 
     the_chosen_one = random.choice(id_list)
-    
+
     query = '''
     query ($id: Int) {
         Media (id: $id, type: ANIME''' + isAdult + ''') {
@@ -189,10 +194,10 @@ async def random_test():
         "id": the_chosen_one
     }
 
-    url = 'https://graphql.anilist.co'
+    url = "https://graphql.anilist.co:"
     async with httpx.AsyncClient() as client:
-            response = await client.post(url, json={'query': query, 'variables': single_episode_vars})
-            result = json.loads(response.text)
+        response = await client.post(url, json={'query': query, 'variables': single_episode_vars})
+        result = json.loads(response.text)
 
     ret_dict = {}
 
@@ -202,7 +207,8 @@ async def random_test():
         ret_dict["title"] = result["data"]["Media"]["title"]["romaji"]
     ret_dict["genres"] = result["data"]["Media"]["genres"]
     ret_dict["image"] = result["data"]["Media"]["coverImage"]["extraLarge"]
-    ret_dict["description"] = clean_html(result["data"]["Media"]["description"])
+    ret_dict["description"] = clean_html(
+        result["data"]["Media"]["description"])
 
     if len(result["data"]["Media"]["streamingEpisodes"]) > 0:
         ret_dict["watch_link"] = result["data"]["Media"]["streamingEpisodes"][0]["url"]
