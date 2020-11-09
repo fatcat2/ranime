@@ -1,4 +1,5 @@
 import json
+import logging
 import random
 from typing import Any, Dict
 
@@ -56,26 +57,26 @@ async def retrieve_show(anime_id: int) -> Show:
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json={'query': query, 'variables': single_episode_vars})
         result = json.loads(response.text)
+        await response.aclose()
 
     ret_dict = {}
-
-    print(result)
 
     title = result["data"]["Media"]["title"].get([key for key in result["data"]["Media"]["title"]][0])
     genres = result["data"]["Media"]["genres"]
     image = result["data"]["Media"]["coverImage"]["extraLarge"]
-    description = clean_html(
-        result["data"]["Media"]["description"])
     
     watch_link = ""
     watch_site = "No site found"
     aired = ""
+    description = ""
 
     external_sites = result["data"]["Media"]["externalLinks"]
 
     try:
+        description = clean_html(result["data"]["Media"]["description"])
         clean_html(description)
     except:
+        logging.error("HTML cleaning error")
         pass
 
     try:
@@ -130,6 +131,7 @@ async def retrieve_id_list(isAdult: int, pages: int) -> Show:
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json={'query': page_query, 'variables': {}})
         result = json.loads(response.text)
+        await response.aclose()
 
     max_page = int(result["data"]["Page"]["pageInfo"]["lastPage"])
 
