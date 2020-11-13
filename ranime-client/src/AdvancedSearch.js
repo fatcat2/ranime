@@ -88,7 +88,7 @@ class AdvancedSearch extends React.Component {
                 /advanced
               </Header>
 
-              <Link to="/anime">
+              <Link to={this.state.link}>
                 <Button color="blue">Give me a show!</Button>
               </Link>
             </Container>
