@@ -28,6 +28,7 @@ class RandomAnime extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      id: 0,
       name: "",
       title: "Loading...",
       genres: [],
@@ -51,12 +52,14 @@ class RandomAnime extends React.Component {
         const description = res.data.description;
         const aired = res.data.aired;
         const externalLinks = res.data.external_links;
+        const id = res.data.id;
         this.setState({ title });
         this.setState({ genres });
         this.setState({ image });
         this.setState({ description });
         this.setState({ aired });
         this.setState({ externalLinks });
+        this.setState({ id });
       });
     } else {
       axios.get(`/data/anime`).then((res) => {
@@ -66,12 +69,14 @@ class RandomAnime extends React.Component {
         const description = res.data.description;
         const aired = res.data.aired;
         const externalLinks = res.data.external_links;
+        const id = res.data.id;
         this.setState({ title });
         this.setState({ genres });
         this.setState({ image });
         this.setState({ description });
         this.setState({ aired });
         this.setState({ externalLinks });
+        this.setState({ id });
       });
     }
   }
@@ -106,7 +111,8 @@ class RandomAnime extends React.Component {
                   <Card.Meta>
                     <span className="date">{this.state.aired}</span>
                   </Card.Meta>
-                  <Card.Description id="cardDescription">{this.state.description}</Card.Description> 
+                  <Card.Description id="cardDescription">{this.state.description}</Card.Description>
+                  <Card.Meta id="linkButton"><a href={"https://anilist.co/anime/" + this.state.id} ><Button color="blue" fluid ui>{"anilist"}</Button></a></Card.Meta > 
                   {watchButtons}
                 </Segment>
               </Grid.Column>
