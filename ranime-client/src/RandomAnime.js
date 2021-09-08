@@ -10,6 +10,7 @@ import {
   GridColumn,
 } from "semantic-ui-react";
 
+import { Link } from "react-router-dom";
 import axios from "axios";
 import queryString from "query-string";
 
@@ -129,6 +130,14 @@ class RandomAnime extends React.Component {
                 >
                   gimme a new one
                 </Button>
+              </div>
+		<br/>
+              <div class="refresh-button">
+	    	<Link to={"/"}>
+                <Button>
+	    		bring me home !
+                </Button>
+	    	</Link>
               </div>
             </GridColumn>
           </Grid>
