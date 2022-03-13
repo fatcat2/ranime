@@ -1,4 +1,5 @@
 import json
+from re import A
 from typing import List
 import logging
 from models.show import Show
@@ -32,9 +33,9 @@ async def random_anime():
     if request.method == "POST":
         body = await request.get_json()
         nsfw_url_arg = int(body["nsfw"])
-    
+
     id_list: List[int] = await retrieve_id_list(nsfw_url_arg, 5)
-    chosen_show: Show = await retrieve_show(random.choice(id_list))
+    chosen_show: Show = await retrieve_show(random.choice(id_list), isAdult=int(nsfw_url_arg))
 
     return jsonify(chosen_show.to_dict())
 
