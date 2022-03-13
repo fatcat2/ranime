@@ -14,4 +14,4 @@ RUN pip install Quart hypercorn httpx bs4
 # webserver, with one worker process and 8 threads.
 # For environments with multiple CPU cores, increase the number of workers
 # to be equal to the cores available.
-CMD exec hypercorn --bind :$PORT app:app
+CMD exec hypercorn --bind :8123 app:app
