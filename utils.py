@@ -15,7 +15,7 @@ def clean_html(text):
         e.extract()
     return soup.text
 
-async def retrieve_show(anime_id: int) -> Show:
+async def retrieve_show(anime_id: int, isAdult: int=0) -> Show:
     """Helper function to extract show data
 
     Params:
@@ -25,9 +25,11 @@ async def retrieve_show(anime_id: int) -> Show:
         Dict[str, Any]: A dictionary with the data formatted for the React frontend.
     """
 
+    nsfw = " isAdult: true " if isAdult == 1 else ""
+
     query = '''
     query ($id: Int) {
-        Media (id: $id, type: ANIME) {
+        Media (id: $id, type: ANIME''' + nsfw + ''') {
             id
             title {
                 romaji
@@ -136,10 +138,18 @@ async def retrieve_id_list(isAdult: int, pages: int) -> Show:
     max_page = int(result["data"]["Page"]["pageInfo"]["lastPage"])
 
     random_pages = [random.choice(range(max_page)) for i in range(pages)]
+    random_pages2 = [random.choice(range(max_page)) for i in range(pages)]
 
-    
-    async with httpx.AsyncClient() as client:
-        page_response = await client.post(url, json={'query': page_query, 'variables': {"page": random.choice(random_pages)}})
-        page_result = json.loads(page_response.text)
+    random_pages += random_pages2
+
+    for random_page in random_pages:
+        if random_page == max_page:
+            random_page -= 1
+        
+        async with httpx.AsyncClient() as client:
+            page_response = await client.post(url, json={'query': page_query, 'variables': {"page": random_page}})
+            page_result = json.loads(page_response.text)
+            if len(page_result["data"]["Page"]["media"]) > 0:
+                break
     
     return [entry["id"] for entry in page_result["data"]["Page"]["media"]]
