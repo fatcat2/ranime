@@ -1,5 +1,5 @@
 # ranime
----
+
 [![Docker](https://github.com/fatcat2/ranime/actions/workflows/main.yml/badge.svg)](https://github.com/fatcat2/ranime/actions/workflows/main.yml)
 
 Source code for https://ranime.torrtle.co.
