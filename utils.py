@@ -129,7 +129,7 @@ async def retrieve_id_list(isAdult: int, pages: int) -> Show:
     }
     '''
 
-    url = "https://graphql.anilist.co:"
+    url = "https://graphql.anilist.co"
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json={'query': page_query, 'variables': {}})
         result = json.loads(response.text)
